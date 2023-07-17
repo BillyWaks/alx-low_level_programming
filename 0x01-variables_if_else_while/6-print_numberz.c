@@ -8,6 +8,7 @@
 int main(void)
 {
 	int c;
+
 	c = 0;
 
 	while
@@ -16,5 +17,5 @@ int main(void)
 			c++;
 		}
         putchar('\n');
-        return(0);
+        return (0);
 }
