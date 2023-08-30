@@ -1,7 +1,5 @@
-//code displays a 64 bit program that prints Hello, Holberton, followed by a new line.
 	  global    main
 	  extern    printf
-
 
 main:
 
