@@ -4,26 +4,23 @@
 #include <strings.h>
 
 /**
- * get_nodeint_at_index - returns the node at a certain index in a linked list
+ * sum_listint - returns the sum of all the data (n) of a listint_t linked list
  * @head: pointer to the first element in the list
- * @index: index of the node to return
  *
- * Return: 0 when success, NULL when it fails
+ * Return: 0 when the list is empty
  */
 
-listint_t *get_nodeint_at_index(listint_t *head, unsigned int index)
+int sum_listint(listint_t *head)
 {
-	/* initialization */
-	unsigned int num = 0;
-
+	int sum = 0; /*initialization*/
 	listint_t *node = head;
 
-	while (num < index && node)
+	while (node)
 	{
+		sum += node->n;
 		node = node->next;
-		num++;
 	}
 
-	return (node ? node : NULL);
+	return (sum);
 }
 
