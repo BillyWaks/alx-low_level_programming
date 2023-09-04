@@ -10,7 +10,7 @@
 
 int create_file(const char *filename, char *text_content)
 {
-	int new_file, len, wr;
+	int new_file, l, w;
 
 	if (filename == NULL)
 		return (-1);
@@ -21,13 +21,13 @@ int create_file(const char *filename, char *text_content)
 	if (text_content != NULL)
 	{
 
-		for (len = 0; text_content[len];)
-			len++;
+		for (l = 0; text_content[l];)
+			l++;
 	}
 
-		wr = write(new_file, text_content, len);
+		w = write(new_file, text_content, l);
 
-		if (wr == -1)
+		if (w == -1)
 		{
 			close(new_file);
 			return (-1);
