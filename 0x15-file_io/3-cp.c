@@ -2,7 +2,16 @@
 #include <strings.h>
 #include <stdio.h>
 
-#define BUFFER_SIZE 1024
+/**
+ * handle_error - Print an error message and exit with the given exit code.
+ * @msg: The error message to print.
+ * @exit_code: The exit code to use when exiting.
+ */
+void handle_error(const char *msg, int exit_code)
+{
+	perror(msg);
+	exit(exit_code);
+}
 
 /**
  * main - Entry point into the program
@@ -15,58 +24,52 @@
 
 int main(int argc, char *argv[])
 {
-	/*initialization*/
-	char *file_from = argv[1];
-	char *file_to = argv[2];
-	int fd_from, fd_to;
-	char buffer[BUFFER_SIZE];
+	int from, to;
+	char *buffer = malloc(BUFSIZ);
 	ssize_t bytes_read, bytes_written;
 
 	if (argc != 3)
 	{
-		dprintf(STDERR_FILENO, "Usage: %s cp file_from file_to\n", argv[0]);
+		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
 		return (97);
 	}
 
+	from = open(argv[1], O_RDONLY);
 
-	/*open the source file for reading*/
-	fd_from = open(file_from, O_RDONLY);
-	if (fd_from == -1)
+	if (from == -1)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s/n", file_from);
-		return (98);
+		handle_error("Error: Can't open source file", 98);
 	}
 
-	/*create the destination file for writing with permissions rw-rw-r--*/
-	fd_to = open(file_to, O_WRONLY | O_CREAT | O_TRUNC, 0664);
-	if (fd_to == -1)
+	to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, 0664);
+
+	if (to == -1)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't write to file %s/n", file_to);
-		close(fd_from);
-		return (99);
+		handle_error("Error: Can't create or write to destination file", 99);
 	}
 
-	while ((bytes_read = read(fd_from, buffer, sizeof(buffer))) > 0)
+	if (buffer == NULL)
 	{
-		bytes_written = write(fd_to, buffer, bytes_read);
-		if (bytes_written == -1)
+		handle_error("Error: Memory allocation failed", 99);
+	}
+
+	while ((bytes_read = read(from, buffer, BUFSIZ)) > 0)
+	{
+		bytes_written = write(to, buffer, bytes_read);
+		if (bytes_written != bytes_read)
 		{
-			dprintf(STDERR_FILENO, "Error: Can't write to file %s/n", file_to);
-			return (99);
+			handle_error("Error: Write error to destination file", 99);
 		}
 	}
 
 	if (bytes_read == -1)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't read from file %s/n", file_from);
-		return (98);
+		handle_error("Error: Read error from source file", 98);
 	}
 
-	if (close(fd_from) == -1 || close(fd_to == -1))
-	{
-		dprintf(STDERR_FILENO, "Error: Can't close file descriptors\n");
-		return (100);
-	}
+	free(buffer);
+	close(from);
+	close(to);
 
 	return (0);
 }
