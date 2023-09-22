@@ -1,75 +1,108 @@
 #include "main.h"
-#include <strings.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
+void close_file(int fd);
+
+char *create_buffer(char *file);
 
 /**
- * handle_error - Print an error message and exit with the given exit code.
- * @msg: The error message to print.
- * @exit_code: The exit code to use when exiting.
+ * create_buffer - Allocates a size of 1024 bytes for the buffer
+ * @file: The name of the file buffer is storing chars for.
+ *
+ * Return: A pointer to the newly-allocated buffer.
  */
-void handle_error(const char *msg, int exit_code)
+char *create_buffer(char *file)
 {
-	perror(msg);
-	exit(exit_code);
+	/*initialization*/
+	char *buffer;
+
+	buffer = malloc(sizeof(char) * 1024);
+
+	if (buffer == NULL)
+	{
+		dprintf(STDERR_FILENO,
+			"Error: Can't write to %s\n", file);
+		exit(99);
+	}
+
+	return (buffer);
 }
 
 /**
- * main - Entry point into the program
- * @argv: array of command-line arguments
- * @argc: number of command-line arguments
- *
- * Return: 0 on success, 97 for wrong arguments, 98 for read error,
- *         99 for write error, 100 for close error
+ * close_file - Closes fd
+ * @fd: The file descriptor to be closed.
  */
+void close_file(int fd)
+{
+	int b;
 
+	b = close(fd);
+
+	if (b == -1)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
+		exit(100);
+	}
+}
+
+/**
+ * main - Entry into the program
+ * @argc: The number of arguments supplied to the program.
+ * @argv: An array of pointers to the arguments.
+ *
+ * Return: 0 on success.
+ *
+ * If the argument count is incorrect - exit code 97.
+ * If file_from does not exist or cannot be read - exit code 98.
+ * If file_to cannot be created or written to - exit code 99.
+ * If file_to or file_from cannot be closed - exit code 100.
+ */
 int main(int argc, char *argv[])
 {
-	int from, to;
-	char *buffer = malloc(BUFSIZ);
-	ssize_t bytes_read, bytes_written;
+	/*initialization*/
+	int from, rd, to, wr;
+	char *buffer;
 
 	if (argc != 3)
 	{
 		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
-		return (97);
+		exit(97);
 	}
 
+	buffer = create_buffer(argv[2]);
 	from = open(argv[1], O_RDONLY);
-
-	if (from == -1)
-	{
-		handle_error("Error: Can't open source file", 98);
-	}
-
+	rd = read(from, buffer, 1024);
 	to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, 0664);
 
-	if (to == -1)
-	{
-		handle_error("Error: Can't create or write to destination file", 99);
-	}
-
-	if (buffer == NULL)
-	{
-		handle_error("Error: Memory allocation failed", 99);
-	}
-
-	while ((bytes_read = read(from, buffer, BUFSIZ)) > 0)
-	{
-		bytes_written = write(to, buffer, bytes_read);
-		if (bytes_written != bytes_read)
+	do {
+		if (from == -1 || rd == -1)
 		{
-			handle_error("Error: Write error to destination file", 99);
+			dprintf(STDERR_FILENO,
+				"Error: Can't read from file %s\n", argv[1]);
+			free(buffer);
+			exit(98);
 		}
-	}
 
-	if (bytes_read == -1)
-	{
-		handle_error("Error: Read error from source file", 98);
-	}
+		wr = write(to, buffer, rd);
+		if (to == -1 || wr == -1)
+		{
+			dprintf(STDERR_FILENO,
+				"Error: Can't write to %s\n", argv[2]);
+			free(buffer);
+			exit(99);
+		}
+
+		rd = read(from, buffer, 1024);
+		to = open(argv[2], O_WRONLY | O_APPEND);
+
+	} while (rd > 0);
 
 	free(buffer);
-	close(from);
-	close(to);
+	close_file(from);
+	close_file(to);
 
 	return (0);
 }
+
