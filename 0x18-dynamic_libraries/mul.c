@@ -1,4 +1,4 @@
-#include <stdlib.h›
+#include <stdlib.h>
 /★★
 * mul - multiply two integers
 * Ca: first unt
