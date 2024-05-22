@@ -1,4 +1,4 @@
-#include <stdio. h>
+#include <stdlib.h>
 /**
 * div - divide two integers
 * Ca: first unt
