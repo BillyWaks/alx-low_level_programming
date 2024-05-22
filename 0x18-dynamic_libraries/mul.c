@@ -1,7 +1,7 @@
 #include <stdlib.h>
-/★★
+/**
 * mul - multiply two integers
-* Ca: first unt
+* @a: first unt
 * @b: second int
 * Return: multiply
 */
